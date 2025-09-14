@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valuable Logistics - ATS Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #2d5016;
+            --light-green: #4a7c59;
+            --accent-green: #7ba05b;
+            --primary-grey: #6b7280;
+            --light-grey: #f3f4f6;
+            --dark-grey: #374151;
+            --white: #ffffff;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --yellow: #f59e0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-grey) 0%, #e5e7eb 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .auth-section {
+            background: white;
+            padding: 3rem;
+            margin: 3rem auto;
+            max-width: 700px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .auth-button {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 80, 22, 0.3);
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(45, 80, 22, 0.4);
+        }
+
+        .auth-button:disabled {
+            background: var(--primary-grey);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            color: var(--primary-grey);
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: none;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--light-grey) 0%, #f9fafb 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--primary-grey);
+            font-weight: 500;
+        }
+
+        .applicant-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .applicant-table th,
+        .applicant-table td {
+            padding: 1rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+        }
+
+        .applicant-table th {
+            background: var(--light-grey);
+            font-weight: 600;
+            color: var(--dark-grey);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .applicant-table tr:hover {
+            background: rgba(45, 80, 22, 0.02);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-new { background: #dbeafe; color: #1e40af; }
+        .status-interview { background: #fef3c7; color: #92400e; }
+        .status-hired { background: #d1fae5; color: #047857; }
+        .status-rejected { background: #fee2e2; color: #dc2626; }
+        .status-waitlist { background: #e5e7eb; color: #374151; }
+
+        .action-btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--light-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--primary-grey);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--dark-grey);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: var(--primary-green);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            font-weight: 500;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: var(--red);
+        }
+
+        .notification.success {
+            background: var(--primary-green);
+        }
+
+        .notification.warning {
+            background: var(--yellow);
+            color: #92400e;
+        }
+
+        .status-panel {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--light-green) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-panel h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .rejected-row {
+            background-color: rgba(239, 68, 68, 0.05) !important;
+        }
+
+        .rejected-name {
+            color: #dc2626 !important;
+            font-weight: bold !important;
+        }
+
+        @media (max-width: 768px) {
+            .header-stats {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .section-content {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">VL</div>
+                <div>
+                    <div>Valuable Logistics</div>
+                    <div style="font-size: 0.8rem; opacity: 0.9;">Applicant Tracking System</div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalApps">-</span>
+                    <span>Total Apps</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="newApps">-</span>
+                    <span>New Today</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="activeEmployees">-</span>
+                    <span>Active Employees</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Section -->
+    <div id="authSection" class="auth-section">
+        <h2 style="margin-bottom: 1rem; color: var(--primary-green); font-size: 2rem;">Connect to Google Sheets</h2>
+        <p style="margin-bottom: 2rem; color: var(--primary-grey); font-size: 1.1rem;">
+            Please authenticate with Google to access your Valuable Logistics spreadsheets
+        </p>
+        <button id="authButton" class="auth-button" onclick="authenticateGoogle()">
+            🔗 Connect Google Account
+        </button>
+        <div style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--primary-grey);">
+            This will request access to your Google Sheets, Gmail, and Calendar
+        </div>
+    </div>
+
+    <!-- Loading Section -->
+    <div id="loadingSection" class="loading">
+        <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">🔄 Loading your data...</h3>
+        <p>Connecting to Google Sheets and processing your applications...</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content">
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">📊 Dashboard Overview</div>
+                <div>
+                    <button class="action-btn btn-primary" onclick="refreshAllData()">🔄 Refresh Data</button>
+                    <button class="action-btn btn-secondary" onclick="openGoogleSheets()">📋 Open Sheets</button>
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="dashboard-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: var(--primary-green);" id="dashNewApps">0</div>
+                        <div class="metric-label">New Applications</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: var(--yellow);" id="dashInterviews">0</div>
+                        <div class="metric-label">Interviews Scheduled</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: var(--red);" id="dashRejected">0</div>
+                        <div class="metric-label">Auto-Rejected</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: var(--primary-green);" id="dashHired">0</div>
+                        <div class="metric-label">Hired This Month</div>
+                    </div>
+                </div>
+
+                <div class="status-panel">
+                    <h4>🔄 Auto-Processing Status: <span id="autoProcessStatus">Ready</span></h4>
+                    <p style="margin-bottom: 1rem; opacity: 0.9;">Your automation is running and processing applications based on your business rules</p>
+                    <button class="action-btn btn-secondary" onclick="runAutoProcessing()">Run Manual Processing</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">📝 Recent Applications</div>
+                <div>
+                    <button class="action-btn btn-primary" onclick="processApplications()">🤖 Auto-Process</button>
+                    <button class="action-btn btn-secondary" onclick="flagDuplicates()">🚩 Flag Duplicates</button>
+                </div>
+            </div>
+            <div class="section-content">
+                <table class="applicant-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Age 21+</th>
+                            <th>Work Auth</th>
+                            <th>Valid License</th>
+                            <th>Lift 75lbs</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTable">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 3rem; color: var(--primary-grey); font-style: italic;">
+                                Connect to Google Sheets to load your applications...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">👥 Employee Management</div>
+                <div>
+                    <button class="action-btn btn-primary" onclick="refreshEmployees()">🔄 Refresh</button>
+                    <button class="action-btn btn-danger" onclick="processOffboarding()">📤 Process Offboarding</button>
+                </div>
+            </div>
+            <div class="section-content">
+                <table class="applicant-table">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>License</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesTable">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem; color: var(--primary-grey); font-style: italic;">
+                                Connect to Google Sheets to load your employees...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <span id="notificationText">Action completed successfully!</span>
+    </div>
+
+    <!-- Google APIs -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+
+    <script>
+        // Configuration - Your actual API credentials
+        const CONFIG = {
+            SHEET_ID: '1Huc1_gP0WRnFTEngS5KVtmXbla5URBgl4NrExaP4_SI',
+            API_KEY: 'AIzaSyBrGZ6nDmKdB562h9xGOjHy6zg2PAkVzZs',
+            CLIENT_ID: '407447561922-o2ja8u3cv31fccq2s3k2p15monc00s63.apps.googleusercontent.com',
+            DISCOVERY_DOC: 'https://sheets.googleapis.com/$discovery/rest?version=v4',
+            SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/gmail.send'
+        };
+
+        // Global variables
+        let gapi;
+        let tokenClient;
+        let isAuthorized = false;
+        let applicationsData = [];
+        let employeesData = [];
+
+        // Initialize Google API
+        async function initializeGapi() {
+            await new Promise((resolve) => {
+                gapi.load('client', resolve);
+            });
+
+            await gapi.client.init({
+                apiKey: CONFIG.API_KEY,
+                discoveryDocs: [CONFIG.DISCOVERY_DOC],
+            });
+
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CONFIG.CLIENT_ID,
+                scope: CONFIG.SCOPES,
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        isAuthorized = true;
+                        document.getElementById('authSection').style.display = 'none';
+                        document.getElementById('loadingSection').style.display = 'block';
+                        loadAllData();
+                    }
+                },
+            });
+        }
+
+        // Authentication
+        function authenticateGoogle() {
+            if (!gapi) {
+                showNotification('Google API not loaded yet. Please wait and try again.', 'error');
+                return;
+            }
+
+            document.getElementById('authButton').disabled = true;
+            document.getElementById('authButton').textContent = 'Connecting...';
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        // Load all data from Google Sheets
+        async function loadAllData() {
+            try {
+                showNotification('Loading data from Google Sheets...', 'success');
+                
+                // Load applications data
+                await loadApplicationsData();
+                
+                // Load employees data  
+                await loadEmployeesData();
+                
+                // Show main content
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                showNotification('✅ Successfully connected to Google Sheets!', 'success');
+                updateDashboard();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('❌ Error loading data: ' + error.message, 'error');
+            }
+        }
+
+        // Load applications from Google Sheets
+        async function loadApplicationsData() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: CONFIG.SHEET_ID,
+                    range: 'Applications!A5:AF1000',
+                });
+
+                const values = response.result.values || [];
+                applicationsData = values.map((row, index) => ({
+                    rowIndex: index + 5,
+                    interviewNotes: row[0] || '',
+                    timestamp: row[1] || '',
+                    submit: row[2] || '',
+                    status: row[3] || '',
+                    fullName: row[4] || '',
+                    homeAddress: row[5] || '',
+                    city: row[6] || '',
+                    dlNumber: row[7] || '',
+                    dlExp: row[8] || '',
+                    dlState: row[9] || '',
+                    dob: row[10] || '',
+                    ssn: row[11] || '',
+                    phone: row[12] || '',
+                    email: row[13] || '',
+                    emailField: row[14] || '',
+                    age21Plus: row[15] || '',
+                    workAuth: row[16] || '',
+                    validLicense: row[17] || '',
+                    drivingExp: row[18] || '',
+                    vehicleTypes: row[19] || '',
+                    gpsExp: row[20] || '',
+                    amazonDSP: row[21] || '',
+                    amazonWarehouse: row[22] || '',
+                    lift75lbs: row[25] || '',
+                    violations: row[26] || '',
+                }));
+
+                updateApplicationsTable();
+                
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                throw error;
+            }
+        }
+
+        // Load employees from Google Sheets
+        async function loadEmployeesData() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: CONFIG.SHEET_ID,
+                    range: 'Employees!A2:L1000',
+                });
+
+                const values = response.result.values || [];
+                employeesData = values.map((row, index) => ({
+                    rowIndex: index + 2,
+                    status: row[0] || '',
+                    transporterId: row[1] || '',
+                    name: row[2] || '',
+                    address: row[3] || '',
+                    city: row[4] || '',
+                    license: row[5] || '',
+                    dlExp: row[6] || '',
+                    dlState: row[7] || '',
+                    dob: row[8] || '',
+                    ssn: row[9] || '',
+                    phone: row[10] || '',
+                    email: row[11] || ''
+                }));
+
+                updateEmployeesTable();
+                
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                throw error;
+            }
+        }
+
+        // Update applications table
+        function updateApplicationsTable() {
+            const tableBody = document.getElementById('applicationsTable');
+            
+            if (applicationsData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 3rem; color: var(--primary-grey);">No applications found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = applicationsData.map(app => {
+                const hasIssues = app.violations === 'YES' || app.age21Plus === 'NO' || app.workAuth === 'NO' || app.validLicense === 'NO' || app.lift75lbs === 'NO';
+                
+                return `
+                <tr class="${hasIssues ? 'rejected-row' : ''}">
+                    <td class="${hasIssues ? 'rejected-name' : ''}">${app.fullName}</td>
+                    <td>${app.email}</td>
+                    <td>${app.phone}</td>
+                    <td><span class="status-badge ${app.age21Plus === 'YES' ? 'status-hired' : 'status-rejected'}">${app.age21Plus || 'N/A'}</span></td>
+                    <td><span class="status-badge ${app.workAuth === 'YES' ? 'status-hired' : 'status-rejected'}">${app.workAuth || 'N/A'}</span></td>
+                    <td><span class="status-badge ${app.validLicense === 'YES' ? 'status-hired' : 'status-rejected'}">${app.validLicense || 'N/A'}</span></td>
+                    <td><span class="status-badge ${app.lift75lbs === 'YES' ? 'status-hired' : 'status-rejected'}">${app.lift75lbs || 'N/A'}</span></td>
+                    <td>${app.status || 'New'}</td>
+                    <td>
+                        <button class="action-btn btn-primary" onclick="scheduleInterview('${app.fullName}', '${app.email}')">📅 Schedule</button>
+                        <button class="action-btn btn-danger" onclick="rejectApplicant(${app.rowIndex}, '${app.fullName}', '${app.email}')">❌ Reject</button>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        // Update employees table
+        function updateEmployeesTable() {
+            const tableBody = document.getElementById('employeesTable');
+            
+            if (employeesData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 3rem; color: var(--primary-grey);">No employees found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = employeesData.map(emp => `
+                <tr>
+                    <td><span class="status-badge status-${emp.status === 'Active' ? 'hired' : emp.status === 'Offboard' ? 'rejected' : 'new'}">${emp.status}</span></td>
+                    <td>${emp.name}</td>
+                    <td>Driver</td>
+                    <td>${emp.license}</td>
+                    <td>${emp.phone}</td>
+                    <td>${emp.email}</td>
+                    <td>
+                        <button class="action-btn btn-secondary" onclick="viewEmployee('${emp.name}')">👁️ View</button>
+                        ${emp.status === 'Active' ? `<button class="action-btn btn-danger" onclick="offboardEmployee(${emp.rowIndex}, '${emp.name}')">📤 Offboard</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Auto-process applications based on your rules
+        async function processApplications() {
+            showNotification('🤖 Processing applications with your business rules...', 'success');
+            
+            const toReject = applicationsData.filter(app => 
+                app.age21Plus === 'NO' || 
+                app.workAuth === 'NO' || 
+                app.validLicense === 'NO' || 
+                app.lift75lbs === 'NO' ||
+                app.violations === 'YES'
+            );
+
+            if (toReject.length === 0) {
+                showNotification('✅ No applications need auto-rejection', 'success');
+                return;
+            }
+
+            for (const app of toReject) {
+                let reason = '';
+                if (app.age21Plus === 'NO') reason = 'Under 21 years old';
+                else if (app.workAuth === 'NO') reason = 'Not authorized to work in US';
+                else if (app.validLicense === 'NO') reason = 'Invalid drivers license';
+                else if (app.lift75lbs === 'NO') reason = 'Cannot lift 75 pounds';
+                else if (app.violations === 'YES') reason = 'Has violations on license';
+
+                console.log(`Would reject ${app.fullName} for: ${reason}`);
+            }
+
+            showNotification(`✅ Would auto-process ${toReject.length} applications`, 'success');
+        }
+
+        // Manual reject applicant
+        async function rejectApplicant(rowIndex, name, email) {
+            const reason = prompt(`Please enter the rejection reason for ${name}:`);
+            if (reason && reason.trim()) {
+                showNotification(`✅ ${name} would be rejected for: ${reason}`, 'success');
+                console.log(`Would reject ${name} (row ${rowIndex}) for: ${reason}`);
+            }
+        }
+
+        // Schedule interview
+        function scheduleInterview(name, email) {
+            showNotification(`📅 Would open interview scheduler for ${name}`, 'success');
+        }
+
+        // Flag duplicates
+        async function flagDuplicates() {
+            showNotification('🚩 Would check for duplicate applications...', 'success');
+        }
+
+        // Refresh all data
+        async function refreshAllData() {
+            if (!isAuthorized) {
+                showNotification('Please connect to Google Sheets first', 'warning');
+                return;
+            }
+            showNotification('🔄 Refreshing all data...', 'success');
+            await loadAllData();
+        }
+
+        // Update dashboard metrics
+        function updateDashboard() {
+            const newApps = applicationsData.filter(app => !app.status || app.status === 'New').length;
+            const rejectedApps = applicationsData.filter(app => 
+                app.age21Plus === 'NO' || 
+                app.workAuth === 'NO' || 
+                app.validLicense === 'NO' || 
+                app.lift75lbs === 'NO' ||
+                app.violations === 'YES'
+            ).length;
+            const interviewsScheduled = applicationsData.filter(app => app.status && app.status.includes('Interview')).length;
+            const activeEmployees = employeesData.filter(emp => emp.status === 'Active').length;
+
+            // Update header stats
+            document.getElementById('totalApps').textContent = applicationsData.length;
+            document.getElementById('newApps').textContent = newApps;
+            document.getElementById('activeEmployees').textContent = activeEmployees;
+
+            // Update dashboard cards
+            document.getElementById('dashNewApps').textContent = newApps;
+            document.getElementById('dashInterviews').textContent = interviewsScheduled;
+            document.getElementById('dashRejected').textContent = rejectedApps;
+            document.getElementById('dashHired').textContent = '5'; // This would come from historical data
+        }
+
+        // Run auto-processing
+        async function runAutoProcessing() {
+            document.getElementById('autoProcessStatus').textContent = 'Processing...';
+            
+            try {
+                await processApplications();
+                await flagDuplicates();
+                document.getElementById('autoProcessStatus').textContent = 'Completed ✅';
+                
+                setTimeout(() => {
+                    document.getElementById('autoProcessStatus').textContent = 'Ready';
+                }, 3000);
+                
+            } catch (error) {
+                document.getElementById('autoProcessStatus').textContent = 'Error ❌';
+                showNotification('Error during auto-processing: ' + error.message, 'error');
+            }
+        }
+
+        // Open Google Sheets
+        function openGoogleSheets() {
+            window.open(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/edit`, '_blank');
+        }
+
+        // Process offboarding
+        async function processOffboarding() {
+            const offboardRequests = employeesData.filter(emp => emp.status === 'Offboard');
+            
+            if (offboardRequests.length === 0) {
+                showNotification('No offboarding requests found', 'warning');
+                return;
+            }
+
+            showNotification(`Would process ${offboardRequests.length} offboarding requests...`, 'success');
+            console.log('Offboarding requests:', offboardRequests);
+        }
+
+        // Offboard specific employee
+        async function offboardEmployee(rowIndex, name) {
+            const reason = prompt(`Please enter the reason for offboarding ${name}:`);
+            if (reason && reason.trim()) {
+                showNotification(`Would offboard ${name} for: ${reason}`, 'success');
+                console.log(`Would offboard ${name} (row ${rowIndex}) for: ${reason}`);
+            }
+        }
+
+        // View employee details
+        function viewEmployee(name) {
+            const employee = employeesData.find(emp => emp.name === name);
+            if (employee) {
+                alert(`Employee Details:\n\nName: ${employee.name}\nID: ${employee.transporterId}\nLicense: ${employee.license}\nPhone: ${employee.phone}\nEmail: ${employee.email}\nStatus: ${employee.status}`);
+            }
+        }
+
+        // Refresh employees
+        async function refreshEmployees() {
+            if (!isAuthorized) {
+                showNotification('Please connect to Google Sheets first', 'warning');
+                return;
+            }
+            showNotification('Refreshing employee data...', 'success');
+            await loadEmployeesData();
+            updateDashboard();
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            // Remove existing type classes
+            notification.classList.remove('success', 'error', 'warning');
+            
+            // Add new type class
+            notification.classList.add(type);
+            
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize everything when page loads
+        window.addEventListener('load', async () => {
+            try {
+                // Check if we have API credentials
+                if (CONFIG.API_KEY === 'YOUR_API_KEY_HERE' || CONFIG.CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
+                    showNotification('Please configure your Google API credentials first', 'warning');
+                    document.getElementById('authButton').disabled = true;
+                    document.getElementById('authButton').textContent = 'Configure API Keys First';
+                    return;
+                }
+
+                await initializeGapi();
+                showNotification('Ready to connect to Google Sheets', 'success');
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                showNotification('Failed to initialize Google API', 'error');
+            }
+        });
+
+        // Auto-refresh data every 5 minutes (when authorized)
+        setInterval(async () => {
+            if (isAuthorized) {
+                console.log('Auto-refreshing data...');
+                await loadAllData();
+            }
+        }, 300000); // 5 minutes
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        refreshAllData();
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        processApplications();
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        flagDuplicates();
+                        break;
+                }
+            }
+        });
+
+        console.log('Valuable Logistics ATS with Google Sheets Integration Ready!');
+    </script>
+</body>
+</html>
